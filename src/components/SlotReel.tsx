@@ -18,10 +18,12 @@ export const SlotReel = ({ symbol, isSpinning, delay }: SlotReelProps) => {
       const startSpin = setTimeout(() => {
         setAnimationClass('animate-spin-reel');
         
-        // Change symbols rapidly during spin
+        // Cycle through all symbols so players can see them all
+        let symbolIndex = 0;
         const symbolInterval = setInterval(() => {
-          setCurrentSymbol(SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
-        }, 100);
+          setCurrentSymbol(SYMBOLS[symbolIndex]);
+          symbolIndex = (symbolIndex + 1) % SYMBOLS.length;
+        }, 120);
 
         // Stop spinning and show final result
         const stopSpin = setTimeout(() => {

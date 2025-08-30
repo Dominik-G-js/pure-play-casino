@@ -191,14 +191,21 @@ export const SlotMachine = () => {
 
           {/* Paylines */}
           <div className="casino-panel bg-secondary/30">
-            <h3 className="text-lg font-casino text-casino-gold mb-4">PAYLINES</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+            <h3 className="text-lg font-casino text-casino-gold mb-4 text-center">ALL SYMBOLS & PAYOUTS</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
               {Object.entries(SYMBOL_VALUES).map(([symbol, value]) => (
-                <div key={symbol} className="flex items-center justify-between p-2 rounded bg-secondary/50">
-                  <span className="text-2xl">{symbol}</span>
-                  <span className="font-casino text-casino-gold">{value}x</span>
+                <div key={symbol} className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors border border-border/30">
+                  <span className="text-4xl mb-2">{symbol}</span>
+                  <span className="font-casino text-casino-gold text-lg">{value}x</span>
+                  <span className="text-xs text-muted-foreground font-casino-light">bet</span>
                 </div>
               ))}
+            </div>
+            <div className="mt-4 p-3 bg-casino-gold/10 border border-casino-gold/20 rounded-lg">
+              <p className="text-center text-sm font-casino-light text-muted-foreground">
+                <span className="text-casino-gold font-casino">3 matching symbols:</span> Full payout • 
+                <span className="text-casino-gold font-casino ml-2">2 matching symbols:</span> Half payout
+              </p>
             </div>
           </div>
         </div>

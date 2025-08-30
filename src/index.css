@@ -2,41 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Casino Slot Machine Design System */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Casino Color Palette */
+    --background: 220 25% 8%;
+    --foreground: 45 100% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 20% 12%;
+    --card-foreground: 45 100% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 45 100% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 45 100% 55%;
+    --primary-foreground: 220 25% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 45 100% 95%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 45 50% 75%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 315 100% 60%;
+    --accent-foreground: 220 25% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 45 100% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 20% 25%;
+    --input: 220 20% 15%;
+    --ring: 45 100% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Casino-specific tokens */
+    --casino-gold: 45 100% 55%;
+    --casino-gold-dark: 35 100% 45%;
+    --casino-neon: 315 100% 60%;
+    --casino-neon-glow: 315 100% 70%;
+    --casino-green: 120 100% 40%;
+    --casino-red: 0 100% 50%;
+    --casino-blue: 220 100% 60%;
+    
+    /* Gradients */
+    --gradient-casino: linear-gradient(135deg, hsl(var(--casino-gold)) 0%, hsl(var(--casino-gold-dark)) 100%);
+    --gradient-reel: linear-gradient(180deg, hsl(220 20% 20%) 0%, hsl(220 20% 15%) 50%, hsl(220 20% 12%) 100%);
+    --gradient-button: linear-gradient(135deg, hsl(var(--casino-gold)) 0%, hsl(var(--casino-gold-dark)) 100%);
+    --gradient-neon: linear-gradient(135deg, hsl(var(--casino-neon)) 0%, hsl(var(--casino-neon-glow)) 100%);
+    
+    /* Shadows and Effects */
+    --shadow-neon: 0 0 20px hsl(var(--casino-neon) / 0.5), 0 0 40px hsl(var(--casino-neon) / 0.3);
+    --shadow-gold: 0 0 15px hsl(var(--casino-gold) / 0.4), 0 0 30px hsl(var(--casino-gold) / 0.2);
+    --shadow-deep: 0 10px 30px -5px hsl(220 25% 5% / 0.8);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +124,193 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-rajdhani;
+    font-family: 'Rajdhani', 'Orbitron', sans-serif;
+  }
+}
+
+@layer components {
+  /* Casino Typography */
+  .font-casino {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+  }
+  
+  .font-casino-light {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 400;
+  }
+
+  /* Casino Buttons */
+  .btn-casino-primary {
+    @apply bg-gradient-to-br from-casino-gold to-casino-gold-dark text-primary-foreground font-casino;
+    @apply px-8 py-4 rounded-xl shadow-gold;
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+    @apply border-2 border-casino-gold/30;
+  }
+  
+  .btn-casino-secondary {
+    @apply bg-gradient-to-br from-secondary to-secondary/80 text-secondary-foreground font-casino;
+    @apply px-6 py-3 rounded-lg border border-border/50;
+    @apply transition-all duration-300 hover:bg-secondary/90 hover:border-border;
+  }
+  
+  .btn-casino-neon {
+    @apply bg-gradient-to-br from-accent to-accent/80 text-accent-foreground font-casino;
+    @apply px-8 py-4 rounded-xl shadow-neon;
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+    @apply border-2 border-accent/30;
+  }
+
+  /* Casino Cards and Panels */
+  .casino-panel {
+    @apply bg-gradient-to-br from-card to-card/80 rounded-2xl border border-border/30;
+    @apply shadow-deep backdrop-blur-sm p-6;
+  }
+  
+  .casino-reel {
+    @apply bg-gradient-to-b from-secondary/40 to-secondary/60 border-2 border-border/50;
+    @apply rounded-xl shadow-inner backdrop-blur-sm;
+  }
+
+  /* Neon Text Effects */
+  .neon-text {
+    @apply text-accent font-casino text-4xl font-black;
+    text-shadow: 
+      0 0 5px hsl(var(--casino-neon)),
+      0 0 10px hsl(var(--casino-neon)),
+      0 0 15px hsl(var(--casino-neon)),
+      0 0 20px hsl(var(--casino-neon));
+  }
+  
+  .gold-text {
+    @apply text-casino-gold font-casino;
+    text-shadow: 
+      0 0 5px hsl(var(--casino-gold)),
+      0 0 10px hsl(var(--casino-gold)/0.5);
+  }
+
+  /* Casino Animations */
+  .spin-animation {
+    animation: spin 2s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  }
+  
+  .pulse-neon {
+    @apply animate-pulse;
+    box-shadow: var(--shadow-neon);
+  }
+  
+  .bounce-win {
+    animation: bounceWin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* Particle Effects */
+  .particle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  
+  .particle-gold {
+    background: radial-gradient(circle, hsl(var(--casino-gold)) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: particleFloat 2s ease-out forwards;
+  }
+  
+  .particle-sparkle {
+    background: radial-gradient(circle, hsl(var(--casino-neon)) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: sparkle 1.5s ease-out forwards;
+  }
+}
+
+@layer utilities {
+  /* Casino Gradients */
+  .bg-casino-gradient {
+    background: var(--gradient-casino);
+  }
+  
+  .bg-reel-gradient {
+    background: var(--gradient-reel);
+  }
+  
+  .bg-button-gradient {
+    background: var(--gradient-button);
+  }
+  
+  .bg-neon-gradient {
+    background: var(--gradient-neon);
+  }
+
+  /* Custom Shadows */
+  .shadow-neon {
+    box-shadow: var(--shadow-neon);
+  }
+  
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+  
+  .shadow-deep {
+    box-shadow: var(--shadow-deep);
+  }
+
+  /* Text Colors */
+  .text-casino-gold {
+    color: hsl(var(--casino-gold));
+  }
+  
+  .text-casino-neon {
+    color: hsl(var(--casino-neon));
+  }
+  
+  .text-casino-green {
+    color: hsl(var(--casino-green));
+  }
+  
+  .text-casino-red {
+    color: hsl(var(--casino-red));
+  }
+}
+
+/* Custom Keyframes */
+@keyframes bounceWin {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  40%, 43% {
+    transform: translate3d(0, -20px, 0) scale(1.1);
+  }
+  70% {
+    transform: translate3d(0, -10px, 0) scale(1.05);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0) scale(1.02);
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0) scale(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-100px) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-200px) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
   }
 }

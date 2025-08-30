@@ -52,16 +52,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				}
+				'casino-gold': {
+					DEFAULT: 'hsl(var(--casino-gold))',
+					dark: 'hsl(var(--casino-gold-dark))'
+				},
+				'casino-neon': {
+					DEFAULT: 'hsl(var(--casino-neon))',
+					glow: 'hsl(var(--casino-neon-glow))'
+				},
+				'casino-green': 'hsl(var(--casino-green))',
+				'casino-red': 'hsl(var(--casino-red))',
+				'casino-blue': 'hsl(var(--casino-blue))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -88,7 +89,15 @@ export default {
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'bounce-win': 'bounceWin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+				'particle-float': 'particleFloat 2s ease-out forwards',
+				'sparkle': 'sparkle 1.5s ease-out forwards',
+				'spin-reel': 'spin 2s cubic-bezier(0.17, 0.67, 0.12, 0.99)'
+			},
+			fontFamily: {
+				'casino': ['Orbitron', 'monospace'],
+				'rajdhani': ['Rajdhani', 'sans-serif']
 			}
 		}
 	},

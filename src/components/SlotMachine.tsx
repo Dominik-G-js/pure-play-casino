@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { SlotReel } from "./SlotReel";
+import { ReelGrid } from "./ReelGrid";
 import { GameControls } from "./GameControls";
 import { GameStats } from "./GameStats";
 import { ParticleSystem } from "./ParticleSystem";
 import { SoundManager } from "./SoundManager";
 import { useToast } from "@/hooks/use-toast";
 
-const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '💎', '7️⃣'];
+const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '💎', '7️⃣', '🃏', '💥'];
 const SYMBOL_VALUES = {
   '🍒': 2,
   '🍋': 3,
@@ -15,8 +15,20 @@ const SYMBOL_VALUES = {
   '🔔': 10,
   '⭐': 15,
   '💎': 25,
-  '7️⃣': 50
+  '7️⃣': 50,
+  '🃏': 0, // Wild - substitutes any symbol
+  '💥': 0  // Scatter - bonus trigger
 };
+
+const PAYLINES = [
+  [1, 1, 1], // Center line
+  [0, 0, 0], // Top line  
+  [2, 2, 2], // Bottom line
+  [0, 1, 2], // Diagonal down
+  [2, 1, 0]  // Diagonal up
+];
+
+const BONUS_SYMBOLS = ['💥', '🃏'];
 
 export interface GameState {
   balance: number;
@@ -27,6 +39,12 @@ export interface GameState {
   totalWon: number;
   totalBet: number;
   lastWin: number;
+  activePaylines: number;
+  betPerLine: number;
+  freeSpins: number;
+  inBonus: boolean;
+  multiplier: number;
+  winningLines: number[];
 }
 
 export const SlotMachine = () => {
@@ -42,11 +60,21 @@ export const SlotMachine = () => {
       losses: 0,
       totalWon: 0,
       totalBet: 0,
-      lastWin: 0
+      lastWin: 0,
+      activePaylines: 5,
+      betPerLine: 2,
+      freeSpins: 0,
+      inBonus: false,
+      multiplier: 1,
+      winningLines: []
     };
   });
 
-  const [reelResults, setReelResults] = useState(['🍒', '🍒', '🍒']);
+  const [reelResults, setReelResults] = useState([
+    ['🍒', '🍋', '🍊'], // Reel 1 (top, center, bottom)
+    ['🍒', '🍋', '🍊'], // Reel 2  
+    ['🍒', '🍋', '🍊']  // Reel 3
+  ]);
   const [showParticles, setShowParticles] = useState(false);
   const soundManager = useRef(new SoundManager());
   const particleRef = useRef<HTMLDivElement>(null);
@@ -60,25 +88,93 @@ export const SlotMachine = () => {
     return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
   };
 
-  const checkWin = (results: string[]) => {
-    // Check for three of a kind
-    if (results[0] === results[1] && results[1] === results[2]) {
-      return SYMBOL_VALUES[results[0] as keyof typeof SYMBOL_VALUES] * gameState.bet;
+  const getRandomReel = () => {
+    return [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+  };
+
+  const checkMultilineWins = (grid: string[][]) => {
+    let totalWin = 0;
+    let winningLines: number[] = [];
+    let scatterCount = 0;
+    
+    // Count scatter symbols across entire grid
+    grid.forEach(reel => {
+      reel.forEach(symbol => {
+        if (symbol === '💥') scatterCount++;
+      });
+    });
+    
+    // Check each payline
+    PAYLINES.forEach((payline, lineIndex) => {
+      if (lineIndex >= gameState.activePaylines) return;
+      
+      const lineSymbols = [
+        grid[0][payline[0]], // First reel, payline position
+        grid[1][payline[1]], // Second reel, payline position  
+        grid[2][payline[2]]  // Third reel, payline position
+      ];
+      
+      let lineWin = 0;
+      
+      // Check for wilds and substitute
+      const processedSymbols = lineSymbols.map(symbol => 
+        symbol === '🃏' ? lineSymbols.find(s => s !== '🃏' && s !== '💥') || symbol : symbol
+      );
+      
+      // Check for three of a kind (including wilds)
+      if (processedSymbols[0] === processedSymbols[1] && processedSymbols[1] === processedSymbols[2]) {
+        const symbol = processedSymbols[0];
+        if (symbol !== '💥' && SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES]) {
+          lineWin = SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES] * gameState.betPerLine * gameState.multiplier;
+        }
+      }
+      // Check for two of a kind (including wilds)
+      else if (processedSymbols[0] === processedSymbols[1] || 
+               processedSymbols[1] === processedSymbols[2] || 
+               processedSymbols[0] === processedSymbols[2]) {
+        const symbol = processedSymbols[0] === processedSymbols[1] ? processedSymbols[0] : 
+                      processedSymbols[1] === processedSymbols[2] ? processedSymbols[1] : processedSymbols[0];
+        if (symbol !== '💥' && SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES]) {
+          lineWin = Math.floor(SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES] * gameState.betPerLine * 0.5 * gameState.multiplier);
+        }
+      }
+      
+      if (lineWin > 0) {
+        totalWin += lineWin;
+        winningLines.push(lineIndex);
+      }
+    });
+    
+    // Scatter bonus (3 or more scatters trigger free spins)
+    if (scatterCount >= 3) {
+      const scatterWin = scatterCount * gameState.betPerLine * gameState.activePaylines;
+      totalWin += scatterWin;
+      
+      // Award free spins
+      if (!gameState.inBonus) {
+        setGameState(prev => ({
+          ...prev,
+          freeSpins: prev.freeSpins + (scatterCount * 5),
+          inBonus: true,
+          multiplier: Math.min(prev.multiplier + 1, 5)
+        }));
+        
+        toast({
+          title: "🎉 BONUS TRIGGERED!",
+          description: `${scatterCount * 5} Free Spins + ${Math.min(gameState.multiplier + 1, 5)}x Multiplier!`,
+          className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+        });
+      }
     }
     
-    // Check for two of a kind
-    if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
-      const symbol = results[0] === results[1] ? results[0] : 
-                   results[1] === results[2] ? results[1] : results[0];
-      return Math.floor(SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES] * gameState.bet * 0.5);
-    }
-    
-    return 0;
+    return { totalWin, winningLines, scatterCount };
   };
 
   const spin = async () => {
-    if (gameState.isSpinning || gameState.balance < gameState.bet) {
-      if (gameState.balance < gameState.bet) {
+    const totalBet = gameState.betPerLine * gameState.activePaylines;
+    
+    if (gameState.isSpinning || gameState.balance < totalBet) {
+      if (gameState.balance < totalBet) {
         toast({
           title: "Insufficient Balance",
           description: "You don't have enough credits to place this bet.",
@@ -88,11 +184,16 @@ export const SlotMachine = () => {
       return;
     }
 
+    // Use free spin if available
+    const usingFreeSpin = gameState.freeSpins > 0;
+    
     setGameState(prev => ({
       ...prev,
       isSpinning: true,
-      balance: prev.balance - prev.bet,
-      totalBet: prev.totalBet + prev.bet
+      balance: usingFreeSpin ? prev.balance : prev.balance - totalBet,
+      totalBet: prev.totalBet + (usingFreeSpin ? 0 : totalBet),
+      freeSpins: usingFreeSpin ? prev.freeSpins - 1 : prev.freeSpins,
+      winningLines: []
     }));
 
     // Play spin sound
@@ -101,29 +202,48 @@ export const SlotMachine = () => {
     // Simulate spinning animation delay
     await new Promise(resolve => setTimeout(resolve, 2500));
 
-    const results = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
-    setReelResults(results);
+    // Generate 3x3 grid (3 reels, 3 symbols each)
+    const newGrid = [
+      getRandomReel(), // Reel 1
+      getRandomReel(), // Reel 2  
+      getRandomReel()  // Reel 3
+    ];
+    
+    setReelResults(newGrid);
 
-    const winAmount = checkWin(results);
+    const { totalWin, winningLines, scatterCount } = checkMultilineWins(newGrid);
     
     setGameState(prev => ({
       ...prev,
       isSpinning: false,
-      balance: prev.balance + winAmount,
-      wins: winAmount > 0 ? prev.wins + 1 : prev.wins,
-      losses: winAmount === 0 ? prev.losses + 1 : prev.losses,
-      totalWon: prev.totalWon + winAmount,
-      lastWin: winAmount
+      balance: prev.balance + totalWin,
+      wins: totalWin > 0 ? prev.wins + 1 : prev.wins,
+      losses: totalWin === 0 ? prev.losses + 1 : prev.losses,
+      totalWon: prev.totalWon + totalWin,
+      lastWin: totalWin,
+      winningLines: winningLines,
+      // Reset multiplier if not in bonus and no scatters
+      multiplier: !prev.inBonus && scatterCount < 3 ? 1 : prev.multiplier,
+      // Exit bonus if no free spins left
+      inBonus: prev.freeSpins > 1 || scatterCount >= 3 ? prev.inBonus : false
     }));
 
-    if (winAmount > 0) {
+    if (totalWin > 0) {
       setShowParticles(true);
       soundManager.current.playWinSound();
       
+      let toastMessage = `You won ${totalWin} credits!`;
+      if (winningLines.length > 1) {
+        toastMessage += ` (${winningLines.length} lines)`;
+      }
+      if (gameState.multiplier > 1) {
+        toastMessage += ` with ${gameState.multiplier}x multiplier!`;
+      }
+      
       toast({
         title: "🎉 Winner!",
-        description: `You won ${winAmount} credits!`,
-        className: "bg-casino-gradient text-primary-foreground"
+        description: toastMessage,
+        className: "bg-gradient-to-r from-green-600 to-emerald-600 text-white"
       });
 
       setTimeout(() => setShowParticles(false), 3000);
@@ -132,14 +252,26 @@ export const SlotMachine = () => {
     }
   };
 
-  const updateBet = (newBet: number) => {
-    if (!gameState.isSpinning && newBet <= gameState.balance) {
-      setGameState(prev => ({ ...prev, bet: newBet }));
+  const updateBet = (newBetPerLine: number) => {
+    const totalBet = newBetPerLine * gameState.activePaylines;
+    if (!gameState.isSpinning && totalBet <= gameState.balance) {
+      setGameState(prev => ({ ...prev, betPerLine: newBetPerLine, bet: totalBet }));
+    }
+  };
+
+  const updatePaylines = (newPaylines: number) => {
+    const totalBet = gameState.betPerLine * newPaylines;
+    if (!gameState.isSpinning && totalBet <= gameState.balance && newPaylines >= 1 && newPaylines <= 5) {
+      setGameState(prev => ({ 
+        ...prev, 
+        activePaylines: newPaylines,
+        bet: gameState.betPerLine * newPaylines
+      }));
     }
   };
 
   const maxBet = () => {
-    const maxPossible = Math.min(100, gameState.balance);
+    const maxPossible = Math.min(20, Math.floor(gameState.balance / gameState.activePaylines));
     updateBet(maxPossible);
   };
 
@@ -204,19 +336,13 @@ export const SlotMachine = () => {
                     </div>
                   </div>
 
-                  {/* Reels Container */}
-                  <div className="flex justify-center gap-2 relative z-10">
-                    {reelResults.map((symbol, index) => (
-                      <div key={index} className="relative">
-                        {/* Reel Frame */}
-                        <div className="absolute -inset-2 bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-xl shadow-lg"></div>
-                        <SlotReel
-                          symbol={symbol}
-                          isSpinning={gameState.isSpinning}
-                          delay={index * 500}
-                        />
-                      </div>
-                    ))}
+                  {/* Reels Container - New 3x3 Grid */}
+                  <div className="relative z-10">
+                    <ReelGrid 
+                      grid={reelResults}
+                      isSpinning={gameState.isSpinning}
+                      winningLines={gameState.winningLines}
+                    />
                   </div>
 
                   {/* Win Line Highlight */}
@@ -227,12 +353,13 @@ export const SlotMachine = () => {
 
                 {/* Machine Base */}
                 <div className="bg-gradient-to-b from-yellow-500 to-yellow-700 rounded-xl p-4 border-2 border-yellow-300">
-                  <GameControls
-                    gameState={gameState}
-                    onSpin={spin}
-                    onBetChange={updateBet}
-                    onMaxBet={maxBet}
-                  />
+          <GameControls
+            gameState={gameState}
+            onSpin={spin}
+            onBetChange={updateBet}
+            onMaxBet={maxBet}
+            onPaylineChange={updatePaylines}
+          />
                 </div>
               </div>
 

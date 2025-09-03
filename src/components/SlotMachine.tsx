@@ -240,7 +240,7 @@ export const SlotMachine = () => {
       soundManager.current.playWinSound();
       
       let toastMessage = `You won ${totalWin} credits!`;
-      if (winningLines.length > 1) {
+      if ((winningLines?.length || 0) > 1) {
         toastMessage += ` (${winningLines.length} lines)`;
       }
       if (gameState.multiplier > 1) {

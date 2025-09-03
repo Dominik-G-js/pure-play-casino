@@ -189,7 +189,7 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
           <div className="text-xl font-casino text-casino-green">
             +{gameState.lastWin.toLocaleString()}
           </div>
-          {gameState.winningLines.length > 1 && (
+          {(gameState.winningLines?.length || 0) > 1 && (
             <div className="text-xs text-casino-green/80 font-casino-light">
               {gameState.winningLines.length} winning lines
             </div>

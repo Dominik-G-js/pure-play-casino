@@ -15,7 +15,11 @@ const PAYLINES = [
 ];
 
 export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
-  const [spinningSymbols, setSpinningSymbols] = useState(grid);
+  const [spinningSymbols, setSpinningSymbols] = useState(grid || [
+    ['🍒', '🍋', '🍊'],
+    ['🍒', '🍋', '🍊'], 
+    ['🍒', '🍋', '🍊']
+  ]);
 
   useEffect(() => {
     if (isSpinning) {
@@ -36,7 +40,11 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
 
       return () => clearInterval(interval);
     } else {
-      setSpinningSymbols(grid);
+      setSpinningSymbols(grid || [
+        ['🍒', '🍋', '🍊'],
+        ['🍒', '🍋', '🍊'], 
+        ['🍒', '🍋', '🍊']
+      ]);
     }
   }, [isSpinning, grid]);
 
@@ -81,7 +89,7 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
   return (
     <div className="grid grid-cols-3 gap-3 p-4 bg-black/80 rounded-2xl border-4 border-gray-600 shadow-inner relative">
       {/* Payline overlays */}
-      {winningLines.map(lineIndex => {
+      {(winningLines || []).map(lineIndex => {
         const payline = PAYLINES[lineIndex];
         if (!payline || isSpinning) return null;
         
@@ -117,8 +125,8 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
       })}
 
       {/* Reel symbols */}
-      {spinningSymbols.map((reel, reelIndex) =>
-        reel.map((symbol, positionIndex) => (
+      {(spinningSymbols || []).map((reel, reelIndex) =>
+        (reel || []).map((symbol, positionIndex) => (
           <div
             key={`${reelIndex}-${positionIndex}`}
             className={getSymbolStyle(reelIndex, positionIndex)}

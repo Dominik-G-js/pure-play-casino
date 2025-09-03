@@ -127,15 +127,15 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
       {/* Reel symbols */}
       {(spinningSymbols || []).map((reel, reelIndex) =>
         (reel || []).map((symbol, positionIndex) => (
-          <div
-            key={`${reelIndex}-${positionIndex}`}
-            className={getSymbolStyle(reelIndex, positionIndex)}
-            style={{
-              animationDelay: isSpinning ? `${reelIndex * 200 + positionIndex * 100}ms` : '0ms'
-            }}
-          >
-            {symbol}
-          </div>
+            <div
+              key={`${reelIndex}-${positionIndex}`}
+              className={getSymbolStyle(reelIndex, positionIndex)}
+              style={{
+                animationDelay: isSpinning ? `${reelIndex * 200 + positionIndex * 100}ms` : '0ms'
+              }}
+            >
+              {symbol || '🍒'}
+            </div>
         ))
       )}
     </div>

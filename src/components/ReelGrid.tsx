@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 interface ReelGridProps {
   grid: string[][];
   isSpinning: boolean;
-  winningLines: number[];
+  winningLines?: number[];
 }
 
 const PAYLINES = [
@@ -53,7 +53,7 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
     
     // Check if this position is part of a winning line
     let isWinning = false;
-    winningLines.forEach(lineIndex => {
+    (winningLines || []).forEach(lineIndex => {
       const payline = PAYLINES[lineIndex];
       if (payline && payline[reelIndex] === positionIndex) {
         isWinning = true;
@@ -66,8 +66,9 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
       baseClasses += " bg-gradient-to-br from-gray-600 to-gray-800 border-gray-500 animate-bounce";
     } else {
       // Symbol-specific styling
-      const symbol = spinningSymbols[reelIndex][positionIndex];
-      switch (symbol) {
+      const symbol = spinningSymbols?.[reelIndex]?.[positionIndex];
+      if (symbol) {
+        switch (symbol) {
         case '🃏': // Wild
           baseClasses += " bg-gradient-to-br from-purple-500 to-purple-700 border-purple-400 shadow-purple-400/30";
           break;
@@ -80,6 +81,7 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
           break;
         default:
           baseClasses += " bg-gradient-to-br from-slate-600 to-slate-800 border-slate-500";
+        }
       }
     }
 

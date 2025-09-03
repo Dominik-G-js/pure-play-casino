@@ -175,12 +175,13 @@ export const SlotMachine = () => {
     const totalBet = gameState.betPerLine * gameState.activePaylines;
     console.log('Total bet:', totalBet, 'Balance:', gameState.balance, 'IsSpinning:', gameState.isSpinning);
     
-    if (gameState.isSpinning || gameState.balance < totalBet) {
-      if (gameState.balance < totalBet) {
-        console.log('Insufficient balance');
+    // Check if spin is allowed (must not be spinning AND either have balance OR free spins)
+    if (gameState.isSpinning || (gameState.balance < totalBet && gameState.freeSpins <= 0)) {
+      if (gameState.balance < totalBet && gameState.freeSpins <= 0) {
+        console.log('Insufficient balance and no free spins');
         toast({
           title: "Insufficient Balance",
-          description: "You don't have enough credits to place this bet.",
+          description: "You don't have enough credits to place this bet and no free spins available.",
           variant: "destructive"
         });
       }

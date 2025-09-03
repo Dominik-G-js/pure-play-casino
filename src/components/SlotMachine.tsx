@@ -171,10 +171,13 @@ export const SlotMachine = () => {
   };
 
   const spin = async () => {
+    console.log('Spin function called');
     const totalBet = gameState.betPerLine * gameState.activePaylines;
+    console.log('Total bet:', totalBet, 'Balance:', gameState.balance, 'IsSpinning:', gameState.isSpinning);
     
     if (gameState.isSpinning || gameState.balance < totalBet) {
       if (gameState.balance < totalBet) {
+        console.log('Insufficient balance');
         toast({
           title: "Insufficient Balance",
           description: "You don't have enough credits to place this bet.",
@@ -186,15 +189,19 @@ export const SlotMachine = () => {
 
     // Use free spin if available
     const usingFreeSpin = gameState.freeSpins > 0;
+    console.log('Using free spin:', usingFreeSpin);
     
-    setGameState(prev => ({
-      ...prev,
-      isSpinning: true,
-      balance: usingFreeSpin ? prev.balance : prev.balance - totalBet,
-      totalBet: prev.totalBet + (usingFreeSpin ? 0 : totalBet),
-      freeSpins: usingFreeSpin ? prev.freeSpins - 1 : prev.freeSpins,
-      winningLines: []
-    }));
+    setGameState(prev => {
+      console.log('Setting game state to spinning');
+      return {
+        ...prev,
+        isSpinning: true,
+        balance: usingFreeSpin ? prev.balance : prev.balance - totalBet,
+        totalBet: prev.totalBet + (usingFreeSpin ? 0 : totalBet),
+        freeSpins: usingFreeSpin ? prev.freeSpins - 1 : prev.freeSpins,
+        winningLines: []
+      };
+    });
 
     // Play spin sound
     soundManager.current.playSpinSound();

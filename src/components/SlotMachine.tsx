@@ -51,8 +51,7 @@ export const SlotMachine = () => {
   const { toast } = useToast();
   
   const [gameState, setGameState] = useState<GameState>(() => {
-    const saved = localStorage.getItem('slot-machine-state');
-    return saved ? JSON.parse(saved) : {
+    const defaultState = {
       balance: 1000,
       bet: 10,
       isSpinning: false,
@@ -68,6 +67,19 @@ export const SlotMachine = () => {
       multiplier: 1,
       winningLines: []
     };
+    
+    const saved = localStorage.getItem('slot-machine-state');
+    if (saved) {
+      try {
+        const savedState = JSON.parse(saved);
+        // Merge saved state with defaults to ensure all properties exist
+        return { ...defaultState, ...savedState };
+      } catch {
+        // If parsing fails, use default state
+        return defaultState;
+      }
+    }
+    return defaultState;
   });
 
   const [reelResults, setReelResults] = useState([
@@ -171,14 +183,11 @@ export const SlotMachine = () => {
   };
 
   const spin = async () => {
-    console.log('Spin function called');
     const totalBet = gameState.betPerLine * gameState.activePaylines;
-    console.log('Total bet:', totalBet, 'Balance:', gameState.balance, 'IsSpinning:', gameState.isSpinning);
     
     // Check if spin is allowed (must not be spinning AND either have balance OR free spins)
     if (gameState.isSpinning || (gameState.balance < totalBet && gameState.freeSpins <= 0)) {
       if (gameState.balance < totalBet && gameState.freeSpins <= 0) {
-        console.log('Insufficient balance and no free spins');
         toast({
           title: "Insufficient Balance",
           description: "You don't have enough credits to place this bet and no free spins available.",
@@ -190,10 +199,8 @@ export const SlotMachine = () => {
 
     // Use free spin if available
     const usingFreeSpin = gameState.freeSpins > 0;
-    console.log('Using free spin:', usingFreeSpin);
     
     setGameState(prev => {
-      console.log('Setting game state to spinning');
       return {
         ...prev,
         isSpinning: true,

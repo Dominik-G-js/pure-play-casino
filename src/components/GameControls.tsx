@@ -14,16 +14,6 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
   const totalBet = gameState.betPerLine * gameState.activePaylines;
   const canSpin = !gameState.isSpinning && (gameState.balance >= totalBet || gameState.freeSpins > 0);
   
-  // Debug logging
-  console.log('GameControls Debug:', {
-    totalBet,
-    balance: gameState.balance,
-    freeSpins: gameState.freeSpins,
-    isSpinning: gameState.isSpinning,
-    canSpin,
-    onSpin: typeof onSpin
-  });
-  
   return (
     <div className="casino-panel space-y-6">
       <div className="text-center">
@@ -153,23 +143,13 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
       {/* Action Buttons */}
       <div className="space-y-3">
         <Button
-          onClick={(e) => {
-            console.log('Spin button clicked!', { canSpin, onSpin: typeof onSpin });
-            e.preventDefault();
-            e.stopPropagation();
-            if (canSpin && onSpin) {
-              onSpin();
-            } else {
-              console.log('Click blocked:', { canSpin, hasOnSpin: !!onSpin });
-            }
-          }}
+          onClick={onSpin}
           disabled={!canSpin}
           className={`w-full h-14 text-xl font-casino cursor-pointer ${
             gameState.freeSpins > 0 
               ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 animate-pulse' 
               : 'btn-casino-primary'
           }`}
-          style={{ pointerEvents: 'auto' }}
         >
           {gameState.isSpinning ? (
             <div className="flex items-center gap-2">

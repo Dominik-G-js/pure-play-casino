@@ -20,6 +20,40 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
         <h3 className="text-xl font-casino text-casino-gold mb-4">ADVANCED CONTROLS</h3>
       </div>
 
+      {/* Bonus Drop Collection Progress */}
+      {gameState.bonusDropProgress > 0 && (
+        <div className="bg-gradient-to-r from-orange-600/20 to-yellow-600/20 border border-orange-400/30 rounded-xl p-4">
+          <div className="text-center mb-4">
+            <h4 className="text-lg font-casino text-orange-300 mb-2">🎁 BONUS DROP COLLECTION</h4>
+            <div className="text-sm text-orange-200">
+              Progress: {gameState.bonusDropProgress}/9 positions
+            </div>
+          </div>
+          
+          {/* 3x3 Grid Visual */}
+          <div className="grid grid-cols-3 gap-2 mx-auto max-w-[120px]">
+            {gameState.bonusDropsCollected.map((collected, index) => (
+              <div
+                key={index}
+                className={`w-8 h-8 rounded border-2 flex items-center justify-center text-xs transition-all ${
+                  collected 
+                    ? 'bg-orange-500 border-orange-300 text-white animate-pulse' 
+                    : 'bg-gray-700 border-gray-500 text-gray-400'
+                }`}
+              >
+                {collected ? '🎁' : '•'}
+              </div>
+            ))}
+          </div>
+          
+          {gameState.bonusDropProgress === 8 && (
+            <div className="text-center mt-3 text-yellow-300 font-casino text-sm animate-pulse">
+              ONE MORE FOR MEGA BONUS!
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Free Spins & Bonus Display */}
       {(gameState.freeSpins > 0 || gameState.multiplier > 1 || gameState.inBonus) && (
         <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-xl p-4">

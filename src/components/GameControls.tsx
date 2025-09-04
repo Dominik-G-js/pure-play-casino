@@ -8,17 +8,32 @@ interface GameControlsProps {
   onBetChange: (betPerLine: number) => void;
   onMaxBet: () => void;
   onPaylineChange?: (paylines: number) => void;
+  onAutoSpinStart: (count: number) => void;
+  onAutoSpinStop: () => void;
 }
 
-export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPaylineChange }: GameControlsProps) => {
+export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPaylineChange, onAutoSpinStart, onAutoSpinStop }: GameControlsProps) => {
   const totalBet = gameState.betPerLine * gameState.activePaylines;
   const canSpin = !gameState.isSpinning && (gameState.balance >= totalBet || gameState.freeSpins > 0);
   
+  const autoSpinOptions = [10, 25, 50, 100];
+  
   return (
-    <div className="casino-panel space-y-6">
+    <div className="casino-panel space-y-4 lg:space-y-6">
       <div className="text-center">
-        <h3 className="text-xl font-casino text-casino-gold mb-4">ADVANCED CONTROLS</h3>
+        <h3 className="text-lg lg:text-xl font-casino text-casino-gold mb-2 lg:mb-4">GAME CONTROLS</h3>
       </div>
+
+      {/* Auto Spin Display */}
+      {gameState.autoSpinActive && (
+        <div className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-400/30 rounded-xl p-3 lg:p-4">
+          <div className="text-center space-y-2">
+            <div className="text-sm lg:text-lg font-casino text-blue-300 animate-pulse">🔄 AUTO SPIN ACTIVE</div>
+            <div className="text-xl lg:text-2xl font-casino text-casino-gold">{gameState.autoSpinRemaining}</div>
+            <div className="text-xs lg:text-sm text-blue-200">spins remaining</div>
+          </div>
+        </div>
+      )}
 
       {/* Bonus Drop Collection Progress */}
       {gameState.bonusDropProgress > 0 && (
@@ -176,40 +191,90 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
 
       {/* Action Buttons */}
       <div className="space-y-3">
-        <Button
-          onClick={onSpin}
-          disabled={!canSpin}
-          className={`w-full h-14 text-xl font-casino cursor-pointer ${
-            gameState.freeSpins > 0 
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 animate-pulse' 
-              : 'btn-casino-primary'
-          }`}
-        >
-          {gameState.isSpinning ? (
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              SPINNING...
+        {/* Auto Spin & Main Action Buttons */}
+        {!gameState.autoSpinActive ? (
+          <>
+            {/* Manual Spin Button */}
+            <Button
+              onClick={onSpin}
+              disabled={!canSpin}
+              className={`w-full h-12 lg:h-14 text-lg lg:text-xl font-casino cursor-pointer ${
+                gameState.freeSpins > 0 
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 animate-pulse' 
+                  : 'btn-casino-primary'
+              }`}
+            >
+              {gameState.isSpinning ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  SPINNING...
+                </div>
+              ) : gameState.freeSpins > 0 ? (
+                'FREE SPIN'
+              ) : (
+                'SPIN TO WIN'
+              )}
+            </Button>
+
+            {/* Auto Spin Options */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+              {autoSpinOptions.map((count) => (
+                <Button
+                  key={count}
+                  onClick={() => onAutoSpinStart(count)}
+                  disabled={gameState.isSpinning || !canSpin}
+                  variant="outline"
+                  size="sm"
+                  className="btn-casino-secondary text-xs lg:text-sm"
+                >
+                  🔄 {count}
+                </Button>
+              ))}
             </div>
-          ) : gameState.freeSpins > 0 ? (
-            'FREE SPIN'
-          ) : (
-            'SPIN TO WIN'
-          )}
-        </Button>
+          </>
+        ) : (
+          <>
+            {/* Auto Spin Active Button */}
+            <Button
+              onClick={onSpin}
+              disabled={!canSpin}
+              className="w-full h-12 lg:h-14 text-lg lg:text-xl font-casino cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+            >
+              {gameState.isSpinning ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  AUTO SPINNING...
+                </div>
+              ) : (
+                `🔄 AUTO SPIN (${gameState.autoSpinRemaining})`
+              )}
+            </Button>
+
+            {/* Stop Auto Spin */}
+            <Button
+              onClick={onAutoSpinStop}
+              variant="destructive"
+              size="sm"
+              className="w-full"
+            >
+              STOP AUTO SPIN
+            </Button>
+          </>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <Button
             onClick={onMaxBet}
-            disabled={gameState.isSpinning}
-            className="btn-casino-secondary"
+            disabled={gameState.isSpinning || gameState.autoSpinActive}
+            className="btn-casino-secondary text-sm lg:text-base"
           >
             MAX BET
           </Button>
           
           <Button
             onClick={() => onBetChange(1)}
-            disabled={gameState.isSpinning}
-            className="btn-casino-secondary"
+            disabled={gameState.isSpinning || gameState.autoSpinActive}
+            className="btn-casino-secondary text-sm lg:text-base"
           >
             MIN BET
           </Button>

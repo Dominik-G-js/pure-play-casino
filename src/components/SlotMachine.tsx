@@ -427,17 +427,17 @@ export const SlotMachine = () => {
             <div className="bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 rounded-3xl p-4 lg:p-8 border-4 lg:border-8 border-yellow-400 shadow-2xl relative overflow-hidden">
               
               {/* Slot Window - Larger and more prominent */}
-              <div className="relative bg-black rounded-2xl p-4 lg:p-6 mb-4 border-4 border-gray-600 shadow-inner">
+              <div className="relative bg-black rounded-2xl p-6 lg:p-8 mb-6 border-4 border-gray-600 shadow-inner mx-auto max-w-2xl">
                 {/* Payline Indicators */}
                 <div className="absolute inset-0 pointer-events-none">
                   {/* Center Line */}
-                  <div className="absolute top-1/2 left-4 right-4 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent transform -translate-y-0.5 opacity-80"></div>
+                  <div className="absolute top-1/2 left-6 right-6 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent transform -translate-y-0.5 opacity-80"></div>
                   {/* Top Line */}
-                  <div className="absolute top-8 left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60"></div>
+                  <div className="absolute top-10 left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60"></div>
                   {/* Bottom Line */}
-                  <div className="absolute bottom-8 left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-60"></div>
+                  <div className="absolute bottom-10 left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-60"></div>
                   {/* Diagonal Lines */}
-                  <div className="absolute inset-4">
+                  <div className="absolute inset-6">
                     <svg className="w-full h-full opacity-40">
                       <line x1="0" y1="0" x2="100%" y2="100%" stroke="rgba(255,0,255,0.6)" strokeWidth="2"/>
                       <line x1="100%" y1="0" x2="0" y2="100%" stroke="rgba(0,255,255,0.6)" strokeWidth="2"/>
@@ -446,7 +446,7 @@ export const SlotMachine = () => {
                 </div>
 
                 {/* Reels Container */}
-                <div className="relative z-10">
+                <div className="relative z-10 flex justify-center">
                   <ReelGrid 
                     grid={reelResults}
                     isSpinning={gameState.isSpinning}

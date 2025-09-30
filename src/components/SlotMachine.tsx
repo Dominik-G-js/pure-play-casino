@@ -393,27 +393,20 @@ export const SlotMachine = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-2 lg:p-4">
       {/* Casino Machine Frame - Compact Layout */}
       <div className="max-w-7xl mx-auto">
-        {/* Machine Header */}
-        <div className="relative bg-gradient-to-b from-red-600 to-red-800 rounded-2xl p-4 lg:p-6 mb-4 shadow-inner">
+        {/* Machine Header - Compact */}
+        <div className="relative bg-gradient-to-b from-red-600 to-red-800 rounded-xl p-2 lg:p-4 mb-3 shadow-inner">
           <div className="text-center">
-            <h1 className="text-3xl lg:text-5xl font-casino text-yellow-300 drop-shadow-lg tracking-wider mb-2">
+            <h1 className="text-2xl lg:text-4xl font-casino text-yellow-300 drop-shadow-lg tracking-wider">
               🎰 VEGAS FORTUNE 🎰
             </h1>
-            <div className="flex justify-center gap-2 mb-2 lg:mb-4">
-              {[...Array(7)].map((_, i) => (
-                <div key={i} className={`w-3 h-3 lg:w-4 lg:h-4 rounded-full animate-pulse ${
-                  i % 2 === 0 ? 'bg-yellow-400' : 'bg-red-400'
-                }`} style={{animationDelay: `${i * 0.2}s`}}></div>
-              ))}
-            </div>
-            <p className="text-yellow-200 font-casino-light text-lg lg:text-xl">
+            <p className="text-yellow-200 font-casino-light text-sm lg:text-base">
               MULTI-LINE JACKPOT MACHINE
             </p>
           </div>
         </div>
 
         {/* Main Game Area - Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-4">
           
           {/* Left Panel - Stats (Hidden on mobile, sidebar on desktop) */}
           <div className="hidden lg:block lg:col-span-1">
@@ -424,10 +417,10 @@ export const SlotMachine = () => {
 
           {/* Center - Slot Machine (Takes most space) */}
           <div className="col-span-1 lg:col-span-2 xl:col-span-3">
-            <div className="bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 rounded-3xl p-4 lg:p-8 border-4 lg:border-8 border-yellow-400 shadow-2xl relative overflow-hidden">
+            <div className="bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 rounded-2xl p-3 lg:p-4 border-4 border-yellow-400 shadow-2xl relative overflow-hidden">
               
-              {/* Slot Window - Larger and more prominent */}
-              <div className="relative bg-black rounded-2xl p-6 lg:p-8 mb-6 border-4 border-gray-600 shadow-inner mx-auto max-w-2xl">
+              {/* Slot Window - Compact */}
+              <div className="relative bg-black rounded-xl p-4 lg:p-6 mb-3 border-4 border-gray-600 shadow-inner mx-auto max-w-xl">
                 {/* Payline Indicators */}
                 <div className="absolute inset-0 pointer-events-none">
                   {/* Center Line */}
@@ -460,8 +453,8 @@ export const SlotMachine = () => {
                 )}
               </div>
 
-              {/* Game Controls - Inline with slot */}
-              <div className="bg-gradient-to-b from-yellow-500 to-yellow-700 rounded-xl p-3 lg:p-4 border-2 border-yellow-300">
+              {/* Game Controls - Compact and directly below */}
+              <div className="bg-gradient-to-b from-yellow-500 to-yellow-700 rounded-xl p-2 lg:p-3 border-2 border-yellow-300">
                 <GameControls
                   gameState={gameState}
                   onSpin={spin}
@@ -484,29 +477,29 @@ export const SlotMachine = () => {
 
           {/* Right Panel - Payouts (Collapsible on mobile) */}
           <div className="col-span-1 lg:col-span-1">
-            <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-2xl p-4 lg:p-6 border-4 border-green-500">
-              <h3 className="text-xl lg:text-2xl font-casino text-green-300 mb-4 lg:mb-6 text-center">💰 PAYOUTS</h3>
+            <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-xl p-3 lg:p-4 border-4 border-green-500">
+              <h3 className="text-lg lg:text-xl font-casino text-green-300 mb-3 text-center">💰 PAYOUTS</h3>
               
               {/* Jackpot Display */}
-              <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg p-3 lg:p-4 mb-4 lg:mb-6 text-center border-2 border-yellow-300">
-                <div className="text-black font-casino text-sm lg:text-lg">JACKPOT</div>
-                <div className="text-black font-casino text-lg lg:text-2xl">{(gameState.bet * 100).toLocaleString()}</div>
+              <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg p-2 mb-3 text-center border-2 border-yellow-300">
+                <div className="text-black font-casino text-xs lg:text-sm">JACKPOT</div>
+                <div className="text-black font-casino text-base lg:text-xl">{(gameState.bet * 100).toLocaleString()}</div>
               </div>
 
               {/* Symbol Payouts - Compact */}
-              <div className="space-y-2 lg:space-y-3">
+              <div className="space-y-1.5 lg:space-y-2">
                 {Object.entries(SYMBOL_VALUES)
                   .filter(([symbol, value]) => value > 0)
-                  .slice(0, 4) // Show only top 4 symbols to save space
+                  .slice(0, 3) // Show only top 3 symbols to save space
                   .map(([symbol, value]) => (
-                  <div key={symbol} className="flex items-center justify-between bg-green-700/50 rounded-lg p-2 lg:p-3 border border-green-600">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl lg:text-2xl">{symbol}</span>
-                      <div className="text-green-200 text-xs lg:text-sm">
+                  <div key={symbol} className="flex items-center justify-between bg-green-700/50 rounded p-1.5 lg:p-2 border border-green-600">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-lg lg:text-xl">{symbol}</span>
+                      <div className="text-green-200 text-xs">
                         <div>3={value}x</div>
                       </div>
                     </div>
-                    <div className="text-green-300 font-casino text-sm lg:text-lg">
+                    <div className="text-green-300 font-casino text-xs lg:text-sm">
                       {(value * gameState.bet).toLocaleString()}
                     </div>
                   </div>
@@ -514,11 +507,11 @@ export const SlotMachine = () => {
               </div>
 
               {/* Special Symbols - Compact */}
-              <div className="mt-4 space-y-2">
-                <div className="bg-orange-900/50 rounded-lg p-2 border border-orange-600">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🎁</span>
-                    <div className="text-orange-200 text-xs">
+              <div className="mt-2 space-y-1.5">
+                <div className="bg-orange-900/50 rounded p-1.5 border border-orange-600">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm">🎁</span>
+                    <div className="text-orange-200 text-[10px] lg:text-xs">
                       <div className="font-casino">BONUS DROP</div>
                       <div>Collect 9 = MEGA!</div>
                     </div>
@@ -528,8 +521,8 @@ export const SlotMachine = () => {
             </div>
 
             {/* Mobile Stats Panel */}
-            <div className="lg:hidden mt-4">
-              <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl p-4 border-4 border-yellow-500">
+            <div className="lg:hidden mt-3">
+              <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-xl p-3 border-4 border-yellow-500">
                 <GameStats gameState={gameState} />
               </div>
             </div>
@@ -537,10 +530,10 @@ export const SlotMachine = () => {
         </div>
 
         {/* Machine Footer - Compact */}
-        <div className="mt-4 bg-gradient-to-r from-purple-800 to-purple-900 rounded-2xl p-3 lg:p-4 border-2 border-purple-600">
-          <div className="text-center text-purple-200 font-casino-light text-sm lg:text-base">
+        <div className="mt-3 bg-gradient-to-r from-purple-800 to-purple-900 rounded-xl p-2 lg:p-3 border-2 border-purple-600">
+          <div className="text-center text-purple-200 font-casino-light text-xs lg:text-sm">
             <p>Licensed Gaming Machine • RNG Certified • Responsible Gaming</p>
-            <div className="flex justify-center gap-2 lg:gap-4 mt-2 text-xs lg:text-sm">
+            <div className="flex justify-center gap-2 lg:gap-3 mt-1 text-[10px] lg:text-xs">
               <span>RTP: 96.5%</span>
               <span>Max Win: 1000x</span>
               <span>Volatility: High</span>

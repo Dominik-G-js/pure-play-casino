@@ -16,6 +16,17 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
   const totalBet = gameState.betPerLine * gameState.activePaylines;
   const canSpin = !gameState.isSpinning && (gameState.balance >= totalBet || gameState.freeSpins > 0);
   
+  // Debug logging
+  console.log('GameControls Debug:', {
+    isSpinning: gameState.isSpinning,
+    balance: gameState.balance,
+    totalBet,
+    freeSpins: gameState.freeSpins,
+    canSpin,
+    betPerLine: gameState.betPerLine,
+    activePaylines: gameState.activePaylines
+  });
+  
   const autoSpinOptions = [10, 25, 50, 100];
   
   return (
@@ -196,9 +207,17 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
           <>
             {/* Manual Spin Button */}
             <Button
-              onClick={onSpin}
+              onClick={(e) => {
+                console.log('Spin button clicked!', { canSpin, disabled: !canSpin });
+                if (canSpin) {
+                  onSpin();
+                }
+              }}
               disabled={!canSpin}
-              className={`w-full h-12 lg:h-14 text-lg lg:text-xl font-casino cursor-pointer ${
+              type="button"
+              className={`w-full h-12 lg:h-14 text-lg lg:text-xl font-casino ${
+                canSpin ? 'cursor-pointer' : 'cursor-not-allowed'
+              } ${
                 gameState.freeSpins > 0 
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 animate-pulse' 
                   : 'btn-casino-primary'

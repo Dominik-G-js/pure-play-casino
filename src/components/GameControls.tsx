@@ -134,26 +134,26 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
         <div className="bg-secondary/20 rounded p-2 border border-border/30">
           <div className="text-center mb-1">
             <div className="text-[10px] text-muted-foreground font-casino-light">PAYLINES</div>
-            <div className="text-base lg:text-lg font-casino text-casino-neon">{gameState.activePaylines}/5</div>
+            <div className="text-base lg:text-lg font-casino text-casino-neon">{gameState.activePaylines}/20</div>
           </div>
           <div className="flex items-center gap-1">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPaylineChange?.(Math.max(1, gameState.activePaylines - 1))}
+              onClick={() => onPaylineChange?.(Math.max(1, gameState.activePaylines - 5))}
               disabled={gameState.isSpinning || gameState.activePaylines <= 1}
               className="h-6 w-full p-0 font-casino btn-casino-secondary text-xs"
             >
-              -
+              -5
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPaylineChange?.(Math.min(5, gameState.activePaylines + 1))}
-              disabled={gameState.isSpinning || gameState.activePaylines >= 5 || gameState.betPerLine * (gameState.activePaylines + 1) > gameState.balance}
+              onClick={() => onPaylineChange?.(Math.min(20, gameState.activePaylines + 5))}
+              disabled={gameState.isSpinning || gameState.activePaylines >= 20 || gameState.betPerLine * (gameState.activePaylines + 5) > gameState.balance}
               className="h-6 w-full p-0 font-casino btn-casino-secondary text-xs"
             >
-              +
+              +5
             </Button>
           </div>
         </div>
@@ -239,16 +239,16 @@ export const GameControls = ({ gameState, onSpin, onBetChange, onMaxBet, onPayli
           <div className="text-center mb-2">
             <h4 className="text-xs font-casino text-orange-300">🎁 BONUS DROP</h4>
             <div className="text-[10px] text-orange-200">
-              {gameState.bonusDropProgress}/9
+              {gameState.bonusDropProgress}/15
             </div>
           </div>
           
-          {/* 3x3 Grid Visual - Smaller */}
-          <div className="grid grid-cols-3 gap-1 mx-auto max-w-[80px]">
+          {/* 5x3 Grid Visual - Smaller */}
+          <div className="grid grid-cols-5 gap-0.5 mx-auto max-w-[120px]">
             {gameState.bonusDropsCollected.map((collected, index) => (
               <div
                 key={index}
-                className={`w-6 h-6 rounded border flex items-center justify-center text-[10px] transition-all ${
+                className={`w-5 h-5 rounded border flex items-center justify-center text-[8px] transition-all ${
                   collected 
                     ? 'bg-orange-500 border-orange-300 text-white' 
                     : 'bg-gray-700 border-gray-500 text-gray-400'

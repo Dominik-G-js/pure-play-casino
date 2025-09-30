@@ -6,26 +6,55 @@ interface ReelGridProps {
   winningLines?: number[];
 }
 
+// 5-reel paylines
 const PAYLINES = [
-  [1, 1, 1], // Center line
-  [0, 0, 0], // Top line  
-  [2, 2, 2], // Bottom line
-  [0, 1, 2], // Diagonal down
-  [2, 1, 0]  // Diagonal up
+  // Horizontal lines
+  [1, 1, 1, 1, 1], // Center
+  [0, 0, 0, 0, 0], // Top  
+  [2, 2, 2, 2, 2], // Bottom
+  // V-shapes
+  [0, 1, 2, 1, 0],
+  [2, 1, 0, 1, 2],
+  // Zig-zags
+  [0, 1, 0, 1, 0],
+  [2, 1, 2, 1, 2],
+  [1, 0, 1, 0, 1],
+  [1, 2, 1, 2, 1],
+  // Diagonals
+  [0, 0, 1, 2, 2],
+  [2, 2, 1, 0, 0],
+  // Special patterns
+  [1, 0, 0, 0, 1],
+  [1, 2, 2, 2, 1],
+  [0, 1, 1, 1, 0],
+  [2, 1, 1, 1, 2],
+  [0, 2, 0, 2, 0],
+  [2, 0, 2, 0, 2],
+  [1, 1, 0, 1, 1],
+  [1, 1, 2, 1, 1],
+  [0, 1, 2, 2, 2]
 ];
 
 export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
   const [spinningSymbols, setSpinningSymbols] = useState(grid || [
     ['🍒', '🍋', '🍊'],
     ['🍒', '🍋', '🍊'], 
+    ['🍒', '🍋', '🍊'],
+    ['🍒', '🍋', '🍊'],
     ['🍒', '🍋', '🍊']
   ]);
 
   useEffect(() => {
     if (isSpinning) {
-      const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '💎', '7️⃣', '🃏', '💥'];
+      const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '💎', '7️⃣', '🃏', '💥', '🎁', '🌟'];
       const interval = setInterval(() => {
         setSpinningSymbols([
+          [symbols[Math.floor(Math.random() * symbols.length)], 
+           symbols[Math.floor(Math.random() * symbols.length)], 
+           symbols[Math.floor(Math.random() * symbols.length)]],
+          [symbols[Math.floor(Math.random() * symbols.length)], 
+           symbols[Math.floor(Math.random() * symbols.length)], 
+           symbols[Math.floor(Math.random() * symbols.length)]],
           [symbols[Math.floor(Math.random() * symbols.length)], 
            symbols[Math.floor(Math.random() * symbols.length)], 
            symbols[Math.floor(Math.random() * symbols.length)]],
@@ -43,13 +72,15 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
       setSpinningSymbols(grid || [
         ['🍒', '🍋', '🍊'],
         ['🍒', '🍋', '🍊'], 
+        ['🍒', '🍋', '🍊'],
+        ['🍒', '🍋', '🍊'],
         ['🍒', '🍋', '🍊']
       ]);
     }
   }, [isSpinning, grid]);
 
   const getSymbolStyle = (reelIndex: number, positionIndex: number) => {
-    let baseClasses = "w-20 h-20 rounded-xl flex items-center justify-center text-4xl font-bold transition-all duration-300 border-2 shadow-lg";
+    let baseClasses = "w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold transition-all duration-300 border-2 shadow-lg";
     
     // Check if this position is part of a winning line
     let isWinning = false;
@@ -69,11 +100,17 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
       const symbol = spinningSymbols?.[reelIndex]?.[positionIndex];
       if (symbol) {
         switch (symbol) {
+        case '🌟': // MEGA symbol
+          baseClasses += " bg-gradient-to-br from-yellow-300 via-yellow-500 to-orange-600 border-yellow-400 shadow-yellow-400/50 animate-pulse";
+          break;
         case '🃏': // Wild
           baseClasses += " bg-gradient-to-br from-purple-500 to-purple-700 border-purple-400 shadow-purple-400/30";
           break;
         case '💥': // Scatter
           baseClasses += " bg-gradient-to-br from-red-500 to-red-700 border-red-400 shadow-red-400/30";
+          break;
+        case '🎁': // Bonus Drop
+          baseClasses += " bg-gradient-to-br from-orange-500 to-orange-700 border-orange-400 shadow-orange-400/30";
           break;
         case '💎':
         case '7️⃣':
@@ -89,7 +126,7 @@ export const ReelGrid = ({ grid, isSpinning, winningLines }: ReelGridProps) => {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-3 p-4 bg-black/80 rounded-2xl border-4 border-gray-600 shadow-inner relative">
+    <div className="grid grid-cols-5 gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3 p-2 sm:p-3 md:p-4 bg-black/80 rounded-xl md:rounded-2xl border-2 md:border-4 border-gray-600 shadow-inner relative w-full max-w-full overflow-hidden">
       {/* Payline overlays */}
       {(winningLines || []).map(lineIndex => {
         const payline = PAYLINES[lineIndex];

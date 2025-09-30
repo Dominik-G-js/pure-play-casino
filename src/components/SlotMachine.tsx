@@ -6,7 +6,7 @@ import { ParticleSystem } from "./ParticleSystem";
 import { SoundManager } from "./SoundManager";
 import { useToast } from "@/hooks/use-toast";
 
-const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '💎', '7️⃣', '🃏', '💥', '🎁'];
+const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '💎', '7️⃣', '🃏', '💥', '🎁', '🌟'];
 const SYMBOL_VALUES = {
   '🍒': 2,
   '🍋': 3,
@@ -16,17 +16,45 @@ const SYMBOL_VALUES = {
   '⭐': 15,
   '💎': 25,
   '7️⃣': 50,
+  '🌟': 100, // MEGA symbol
   '🃏': 0, // Wild - substitutes any symbol
   '💥': 0, // Scatter - bonus trigger
   '🎁': 0  // Bonus Drop - collection symbol
 };
 
+// 5-reel paylines (20 lines total)
 const PAYLINES = [
-  [1, 1, 1], // Center line
-  [0, 0, 0], // Top line  
-  [2, 2, 2], // Bottom line
-  [0, 1, 2], // Diagonal down
-  [2, 1, 0]  // Diagonal up
+  // Horizontal lines
+  [1, 1, 1, 1, 1], // Center line (0)
+  [0, 0, 0, 0, 0], // Top line (1)
+  [2, 2, 2, 2, 2], // Bottom line (2)
+  
+  // V-shapes
+  [0, 1, 2, 1, 0], // V-shape down (3)
+  [2, 1, 0, 1, 2], // V-shape up (4)
+  
+  // Zig-zags
+  [0, 1, 0, 1, 0], // Zig-zag top (5)
+  [2, 1, 2, 1, 2], // Zig-zag bottom (6)
+  [1, 0, 1, 0, 1], // Zig-zag center-up (7)
+  [1, 2, 1, 2, 1], // Zig-zag center-down (8)
+  
+  // Diagonals
+  [0, 0, 1, 2, 2], // Diagonal down (9)
+  [2, 2, 1, 0, 0], // Diagonal up (10)
+  
+  // Special patterns
+  [1, 0, 0, 0, 1], // M-shape top (11)
+  [1, 2, 2, 2, 1], // M-shape bottom (12)
+  [0, 1, 1, 1, 0], // W-shape top (13)
+  [2, 1, 1, 1, 2], // W-shape bottom (14)
+  
+  // Additional patterns
+  [0, 2, 0, 2, 0], // Large zig-zag (15)
+  [2, 0, 2, 0, 2], // Large zig-zag reverse (16)
+  [1, 1, 0, 1, 1], // Center dip (17)
+  [1, 1, 2, 1, 1], // Center peak (18)
+  [0, 1, 2, 2, 2]  // Rising line (19)
 ];
 
 const BONUS_SYMBOLS = ['💥', '🃏'];
@@ -59,20 +87,20 @@ export const SlotMachine = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
     const defaultState = {
       balance: 1000,
-      bet: 10,
+      bet: 20,
       isSpinning: false,
       wins: 0,
       losses: 0,
       totalWon: 0,
       totalBet: 0,
       lastWin: 0,
-      activePaylines: 5,
+      activePaylines: 10,
       betPerLine: 2,
       freeSpins: 0,
       inBonus: false,
       multiplier: 1,
       winningLines: [],
-      bonusDropsCollected: [false, false, false, false, false, false, false, false, false], // 3x3 grid positions
+      bonusDropsCollected: Array(15).fill(false), // 5x3 grid = 15 positions
       bonusDropProgress: 0,
       autoSpinActive: false,
       autoSpinCount: 0,
@@ -96,7 +124,9 @@ export const SlotMachine = () => {
   const [reelResults, setReelResults] = useState([
     ['🍒', '🍋', '🍊'], // Reel 1 (top, center, bottom)
     ['🍒', '🍋', '🍊'], // Reel 2  
-    ['🍒', '🍋', '🍊']  // Reel 3
+    ['🍒', '🍋', '🍊'], // Reel 3
+    ['🍒', '🍋', '🍊'], // Reel 4
+    ['🍒', '🍋', '🍊']  // Reel 5
   ]);
   const [showParticles, setShowParticles] = useState(false);
   const soundManager = useRef(new SoundManager());
@@ -130,12 +160,16 @@ export const SlotMachine = () => {
     let totalWin = 0;
     let winningLines: number[] = [];
     let scatterCount = 0;
+    let wildCount = 0;
+    let megaSymbolCount = 0;
     let bonusDropsFound: number[] = [];
     
-    // Count scatter symbols and bonus drops across entire grid
+    // Count special symbols and bonus drops across entire grid
     grid.forEach((reel, reelIndex) => {
       reel.forEach((symbol, symbolIndex) => {
         if (symbol === '💥') scatterCount++;
+        if (symbol === '🃏') wildCount++;
+        if (symbol === '🌟') megaSymbolCount++;
         if (symbol === '🎁') {
           const position = reelIndex * 3 + symbolIndex;
           bonusDropsFound.push(position);
@@ -153,8 +187,8 @@ export const SlotMachine = () => {
       });
       
       const newProgress = newCollectedDrops.filter(Boolean).length;
-      const wasComplete = gameState.bonusDropProgress === 9;
-      const isNowComplete = newProgress === 9;
+      const wasComplete = gameState.bonusDropProgress === 15;
+      const isNowComplete = newProgress === 15;
       
       // Update bonus drops state
       setGameState(prev => ({
@@ -165,29 +199,29 @@ export const SlotMachine = () => {
       
       // Trigger MEGA BONUS if all positions are filled
       if (!wasComplete && isNowComplete) {
-        const megaBonus = gameState.betPerLine * gameState.activePaylines * 50;
+        const megaBonus = gameState.betPerLine * gameState.activePaylines * 100;
         totalWin += megaBonus;
         
         // Reset collection and give mega bonus
         setTimeout(() => {
           setGameState(prev => ({
             ...prev,
-            bonusDropsCollected: [false, false, false, false, false, false, false, false, false],
+            bonusDropsCollected: Array(15).fill(false),
             bonusDropProgress: 0,
-            freeSpins: prev.freeSpins + 20,
-            multiplier: 5
+            freeSpins: prev.freeSpins + 30,
+            multiplier: 10
           }));
           
           toast({
-            title: "🎁🎉 MEGA BONUS JACKPOT! 🎉🎁",
-            description: `ALL BONUS DROPS COLLECTED! ${megaBonus} Credits + 20 Free Spins + 5x Multiplier!`,
-            className: "bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold text-lg"
+            title: "🎁🎉🎉 ULTIMATE MEGA JACKPOT! 🎉🎉🎁",
+            description: `ALL 15 BONUS DROPS COLLECTED! ${megaBonus} Credits + 30 Free Spins + 10x Multiplier!`,
+            className: "bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-black font-bold text-xl"
           });
         }, 1000);
       } else if (bonusDropsFound.length > 0) {
         toast({
           title: "🎁 BONUS DROP COLLECTED!",
-          description: `Progress: ${newProgress}/9 positions filled`,
+          description: `Progress: ${newProgress}/15 positions filled`,
           className: "bg-gradient-to-r from-orange-500 to-red-500 text-white"
         });
       }
@@ -198,34 +232,39 @@ export const SlotMachine = () => {
       if (lineIndex >= gameState.activePaylines) return;
       
       const lineSymbols = [
-        grid[0][payline[0]], // First reel, payline position
-        grid[1][payline[1]], // Second reel, payline position  
-        grid[2][payline[2]]  // Third reel, payline position
+        grid[0][payline[0]], 
+        grid[1][payline[1]], 
+        grid[2][payline[2]],
+        grid[3][payline[3]],
+        grid[4][payline[4]]
       ];
       
       let lineWin = 0;
       
       // Check for wilds and substitute
       const processedSymbols = lineSymbols.map(symbol => 
-        symbol === '🃏' ? lineSymbols.find(s => s !== '🃏' && s !== '💥' && s !== '🎁') || symbol : symbol
+        symbol === '🃏' ? lineSymbols.find(s => s !== '🃏' && s !== '💥' && s !== '🎁' && s !== '🌟') || symbol : symbol
       );
       
-      // Check for three of a kind (including wilds)
-      if (processedSymbols[0] === processedSymbols[1] && processedSymbols[1] === processedSymbols[2]) {
-        const symbol = processedSymbols[0];
-        if (symbol !== '💥' && symbol !== '🎁' && SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES]) {
-          lineWin = SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES] * gameState.betPerLine * gameState.multiplier;
+      // Count matching symbols from left to right
+      let matchCount = 1;
+      const firstSymbol = processedSymbols[0];
+      
+      for (let i = 1; i < processedSymbols.length; i++) {
+        if (processedSymbols[i] === firstSymbol) {
+          matchCount++;
+        } else {
+          break;
         }
       }
-      // Check for two of a kind (including wilds)
-      else if (processedSymbols[0] === processedSymbols[1] || 
-               processedSymbols[1] === processedSymbols[2] || 
-               processedSymbols[0] === processedSymbols[2]) {
-        const symbol = processedSymbols[0] === processedSymbols[1] ? processedSymbols[0] : 
-                      processedSymbols[1] === processedSymbols[2] ? processedSymbols[1] : processedSymbols[0];
-        if (symbol !== '💥' && symbol !== '🎁' && SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES]) {
-          lineWin = Math.floor(SYMBOL_VALUES[symbol as keyof typeof SYMBOL_VALUES] * gameState.betPerLine * 0.5 * gameState.multiplier);
-        }
+      
+      // Award wins based on match count (5, 4, 3 of a kind)
+      if (matchCount >= 3 && firstSymbol !== '💥' && firstSymbol !== '🎁' && SYMBOL_VALUES[firstSymbol as keyof typeof SYMBOL_VALUES]) {
+        const baseValue = SYMBOL_VALUES[firstSymbol as keyof typeof SYMBOL_VALUES];
+        
+        // Multipliers: 3-of-kind = 1x, 4-of-kind = 3x, 5-of-kind = 10x
+        const matchMultiplier = matchCount === 5 ? 10 : matchCount === 4 ? 3 : 1;
+        lineWin = baseValue * gameState.betPerLine * matchMultiplier * gameState.multiplier;
       }
       
       if (lineWin > 0) {
@@ -234,26 +273,62 @@ export const SlotMachine = () => {
       }
     });
     
+    // MEGA SYMBOL BONUS - ultra rare jackpot
+    if (megaSymbolCount >= 3) {
+      const megaWin = megaSymbolCount * gameState.betPerLine * gameState.activePaylines * 50;
+      totalWin += megaWin;
+      
+      setGameState(prev => ({
+        ...prev,
+        freeSpins: prev.freeSpins + 50,
+        multiplier: 20
+      }));
+      
+      toast({
+        title: "🌟💰 MEGA SYMBOL JACKPOT! 💰🌟",
+        description: `${megaSymbolCount} MEGA Symbols! ${megaWin} Credits + 50 Free Spins + 20x Multiplier!`,
+        className: "bg-gradient-to-r from-yellow-300 via-yellow-500 to-orange-600 text-black font-bold text-2xl animate-pulse"
+      });
+    }
+    
+    // WILD MADNESS - 5+ wilds trigger wild bonus
+    if (wildCount >= 5) {
+      const wildBonus = wildCount * gameState.betPerLine * gameState.activePaylines * 10;
+      totalWin += wildBonus;
+      
+      setGameState(prev => ({
+        ...prev,
+        freeSpins: prev.freeSpins + 15,
+        multiplier: Math.min(prev.multiplier + 3, 20)
+      }));
+      
+      toast({
+        title: "🃏💥 WILD MADNESS! 💥🃏",
+        description: `${wildCount} Wilds! ${wildBonus} Credits + 15 Free Spins!`,
+        className: "bg-gradient-to-r from-purple-500 to-purple-800 text-white font-bold text-xl"
+      });
+    }
+    
     // Scatter bonus (3 or more scatters trigger free spins)
     if (scatterCount >= 3) {
-      const scatterWin = scatterCount * gameState.betPerLine * gameState.activePaylines;
+      const scatterWin = scatterCount * gameState.betPerLine * gameState.activePaylines * 2;
       totalWin += scatterWin;
       
-      // Award free spins
-      if (!gameState.inBonus) {
-        setGameState(prev => ({
-          ...prev,
-          freeSpins: prev.freeSpins + (scatterCount * 5),
-          inBonus: true,
-          multiplier: Math.min(prev.multiplier + 1, 5)
-        }));
-        
-        toast({
-          title: "🎉 BONUS TRIGGERED!",
-          description: `${scatterCount * 5} Free Spins + ${Math.min(gameState.multiplier + 1, 5)}x Multiplier!`,
-          className: "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
-        });
-      }
+      // Award free spins based on scatter count
+      const freeSpinsAwarded = scatterCount === 3 ? 10 : scatterCount === 4 ? 20 : 40;
+      
+      setGameState(prev => ({
+        ...prev,
+        freeSpins: prev.freeSpins + freeSpinsAwarded,
+        inBonus: true,
+        multiplier: Math.min(prev.multiplier + scatterCount - 2, 20)
+      }));
+      
+      toast({
+        title: "💥🎉 SCATTER BONUS! 🎉💥",
+        description: `${scatterCount} Scatters! ${freeSpinsAwarded} Free Spins + ${Math.min(gameState.multiplier + scatterCount - 2, 20)}x Multiplier!`,
+        className: "bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold text-xl"
+      });
     }
     
     return { totalWin, winningLines, scatterCount };
@@ -294,11 +369,13 @@ export const SlotMachine = () => {
     // Simulate spinning animation delay
     await new Promise(resolve => setTimeout(resolve, 2500));
 
-    // Generate 3x3 grid (3 reels, 3 symbols each)
+    // Generate 5x3 grid (5 reels, 3 symbols each)
     const newGrid = [
       getRandomReel(), // Reel 1
       getRandomReel(), // Reel 2  
-      getRandomReel()  // Reel 3
+      getRandomReel(), // Reel 3
+      getRandomReel(), // Reel 4
+      getRandomReel()  // Reel 5
     ];
     
     setReelResults(newGrid);
@@ -356,7 +433,7 @@ export const SlotMachine = () => {
 
   const updatePaylines = (newPaylines: number) => {
     const totalBet = gameState.betPerLine * newPaylines;
-    if (!gameState.isSpinning && totalBet <= gameState.balance && newPaylines >= 1 && newPaylines <= 5) {
+    if (!gameState.isSpinning && totalBet <= gameState.balance && newPaylines >= 1 && newPaylines <= 20) {
       setGameState(prev => ({ 
         ...prev, 
         activePaylines: newPaylines,
@@ -478,7 +555,7 @@ export const SlotMachine = () => {
           {/* Right Panel - Payouts (Collapsible on mobile) */}
           <div className="col-span-1 lg:col-span-1">
             <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-xl p-3 lg:p-4 border-4 border-green-500">
-              <h3 className="text-lg lg:text-xl font-casino text-green-300 mb-3 text-center">💰 PAYOUTS</h3>
+              <h3 className="text-lg lg:text-xl font-casino text-green-300 mb-3 text-center">💰 VÝPLATY</h3>
               
               {/* Jackpot Display */}
               <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg p-2 mb-3 text-center border-2 border-yellow-300">
@@ -488,19 +565,33 @@ export const SlotMachine = () => {
 
               {/* Symbol Payouts - Compact */}
               <div className="space-y-1.5 lg:space-y-2">
+                {/* MEGA Symbol - Ultra Rare */}
+                <div className="flex items-center justify-between bg-yellow-600/50 rounded p-1.5 lg:p-2 border-2 border-yellow-400 animate-pulse">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-lg lg:text-xl">🌟</span>
+                    <div className="text-yellow-200 text-xs">
+                      <div className="font-casino font-bold">MEGA</div>
+                      <div>5=1000x</div>
+                    </div>
+                  </div>
+                  <div className="text-yellow-300 font-casino text-xs lg:text-sm font-bold">
+                    ULTRA!
+                  </div>
+                </div>
+                
+                {/* Top paying symbols */}
                 {Object.entries(SYMBOL_VALUES)
-                  .filter(([symbol, value]) => value > 0)
-                  .slice(0, 3) // Show only top 3 symbols to save space
+                  .filter(([symbol, value]) => value >= 25)
                   .map(([symbol, value]) => (
                   <div key={symbol} className="flex items-center justify-between bg-green-700/50 rounded p-1.5 lg:p-2 border border-green-600">
                     <div className="flex items-center gap-1.5">
                       <span className="text-lg lg:text-xl">{symbol}</span>
                       <div className="text-green-200 text-xs">
-                        <div>3={value}x</div>
+                        <div>5={value * 10}x</div>
                       </div>
                     </div>
                     <div className="text-green-300 font-casino text-xs lg:text-sm">
-                      {(value * gameState.bet).toLocaleString()}
+                      {(value * gameState.bet * 10).toLocaleString()}
                     </div>
                   </div>
                 ))}
@@ -508,13 +599,45 @@ export const SlotMachine = () => {
 
               {/* Special Symbols - Compact */}
               <div className="mt-2 space-y-1.5">
+                <div className="bg-purple-900/50 rounded p-1.5 border border-purple-600">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm">🃏</span>
+                    <div className="text-purple-200 text-[10px] lg:text-xs">
+                      <div className="font-casino">WILD</div>
+                      <div>Nahrazuje symboly</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-red-900/50 rounded p-1.5 border border-red-600">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm">💥</span>
+                    <div className="text-red-200 text-[10px] lg:text-xs">
+                      <div className="font-casino">SCATTER</div>
+                      <div>3+ = Free Spins!</div>
+                    </div>
+                  </div>
+                </div>
+                
                 <div className="bg-orange-900/50 rounded p-1.5 border border-orange-600">
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm">🎁</span>
                     <div className="text-orange-200 text-[10px] lg:text-xs">
                       <div className="font-casino">BONUS DROP</div>
-                      <div>Collect 9 = MEGA!</div>
+                      <div>Sbírej 15 = MEGA!</div>
                     </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Win multipliers info */}
+              <div className="mt-3 bg-blue-900/30 rounded p-2 border border-blue-600">
+                <div className="text-center text-blue-200 text-[10px] lg:text-xs">
+                  <div className="font-casino mb-1">VÝHERNÍ NÁSOBKY</div>
+                  <div className="space-y-0.5">
+                    <div>5-of-kind: <span className="text-yellow-300">10x</span></div>
+                    <div>4-of-kind: <span className="text-green-300">3x</span></div>
+                    <div>3-of-kind: <span className="text-blue-300">1x</span></div>
                   </div>
                 </div>
               </div>
